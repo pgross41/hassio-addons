@@ -1,0 +1,15 @@
+{
+  "name": "Eseenet/dvr163 NVR",
+  "version": "0.1",
+  "description": "Home Assistant Add-on for interacting with Eseenet/dvr163 NVR",
+  "slug": "dvr163",
+  "url": "https://github.com/pgross41/dvr163-hass",
+  "startup": "application",
+  "boot": "auto",
+  "options": {},
+  "ports": {
+    "2525/tcp": 2525
+  },
+  "schema": {}, 
+  "arch": ["amd64", "armv7", "armhf", "i386" , "aarch64"]
+}

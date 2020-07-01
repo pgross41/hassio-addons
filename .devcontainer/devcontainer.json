@@ -1,0 +1,22 @@
+// For format details, see https://aka.ms/vscode-remote/devcontainer.json 
+// TODO: When https://github.com/microsoft/vscode-remote-release/issues/2129 is fixed, move to ${localWorkspaceFolderBasename}\
+{
+	"name": "Home Assistant Add-On",
+	"context": "..",
+	"dockerFile": "Dockerfile",
+	"appPort": [8123, 2525],
+	"runArgs": [
+		"-e",
+		"GIT_EDITOR=code --wait",
+		"--privileged"
+	],
+	"settings": { 
+		"terminal.integrated.shell.linux": "/bin/bash"
+	},
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/test_hassio/addons/local/dvr163-hass,type=bind,consistency=delegated",
+	"workspaceFolder": "/workspaces/test_hassio/addons/local/dvr163-hass",
+	"mounts": [
+		// Cache docker images between devcontainer rebuilds (and share between devcontainers)
+		"source=vsc-hassio-docker,target=/var/lib/docker,type=volume"
+	]
+}
