@@ -2,8 +2,8 @@
 
 echo Starting SMTP and web servers 
 
+# Run dovecot
 service dovecot start
-postfix start-fg
 
-# Uhhhh todo
-python3 -m http.server 8080
+# Run postfix in the foreground
+postfix start-fg

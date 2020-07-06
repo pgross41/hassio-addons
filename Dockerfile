@@ -1,4 +1,3 @@
-# Configuration
 ARG BUILD_FROM=ubuntu:20.04
 FROM $BUILD_FROM
 ENV LANG=C.UTF-8
@@ -8,9 +7,19 @@ LABEL io.hass.version="VERSION" io.hass.type="addon" io.hass.arch="armhf|aarch64
 # Dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
+    python3-pip \
+    python3-setuptools \
     postfix \
     dovecot-common \
-    dovecot-imapd 
+    dovecot-imapd \
+    unzip \
+    wget 
+RUN pip3 install --force-reinstall dropbox==10.2.0
+# RUN wget https://github.com/dropbox/dropbox-sdk-python/archive/master.zip -O dropbox-sdk-python-master.zip && \
+#     unzip dropbox-sdk-python-master.zip && \
+#     rm dropbox-sdk-python-master.zip && \
+#     cd dropbox-sdk-python-master && \
+#     python3 setup.py install
 
 # Configuration
 RUN true && \
@@ -43,13 +52,12 @@ RUN useradd -p $(openssl passwd -1 $PASSWORD) $USERNAME && \
 # Copy source files 
 COPY root /
 RUN chmod +x /start.sh && \ 
-    chmod +x /var/spool/postfix/dvr163/handle_email.sh && \
-    chmod 777 /var/spool/postfix/dvr163/handle_email_input_buffer
+    chmod +x /data/handle_email.sh && \
+    chmod 777 /data/handle_email_input_buffer
 
 # Add mail alias script to handle mail
-RUN echo "${USERNAME}: |/var/spool/postfix/dvr163/handle_email.sh" >> /etc/aliases && \
+RUN echo "${USERNAME}: |/data/handle_email.sh" >> /etc/aliases && \
     newaliases 
 
 # Run the app
-WORKDIR /data
 CMD ["/start.sh"]

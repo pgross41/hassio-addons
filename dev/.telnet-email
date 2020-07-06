@@ -1,0 +1,8 @@
+ehlo hass
+mail from: hass
+rcpt to: hass
+data
+Subject: test
+This is a test email
+.
+quit 
