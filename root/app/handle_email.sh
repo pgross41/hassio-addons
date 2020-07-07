@@ -1,5 +1,5 @@
 # Write stdin to file
-input_buffer="/data/handle_email_input_buffer";
+input_buffer="/app/handle_email_input_buffer";
 cat > "$input_buffer";
 
 # Upload it to Dropbox

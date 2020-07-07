@@ -1,8 +1,13 @@
 ARG BUILD_FROM=ubuntu:20.04
 FROM $BUILD_FROM
+
 ENV LANG=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
-LABEL io.hass.version="VERSION" io.hass.type="addon" io.hass.arch="armhf|aarch64|i386|amd64"
+
+LABEL io.hass.version="VERSION" io.hass.type="addon" io.hass.arch="armhf|aarch64|i386|amd64" name=dvr163-hass Version=0.0.1
+
+EXPOSE 2525
+EXPOSE 8080
 
 # Dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -52,11 +57,11 @@ RUN useradd -p $(openssl passwd -1 $PASSWORD) $USERNAME && \
 # Copy source files 
 COPY root /
 RUN chmod +x /start.sh && \ 
-    chmod +x /data/handle_email.sh && \
-    chmod 777 /data/handle_email_input_buffer
+    chmod +x /app/handle_email.sh && \
+    chmod 777 /app/handle_email_input_buffer
 
 # Add mail alias script to handle mail
-RUN echo "${USERNAME}: |/data/handle_email.sh" >> /etc/aliases && \
+RUN echo "${USERNAME}: |/app/handle_email.sh" >> /etc/aliases && \
     newaliases 
 
 # Run the app
