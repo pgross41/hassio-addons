@@ -4,7 +4,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start Home Assistant",
+      "label": "hass-run",
       "type": "shell",
       "command": "./.devcontainer/start_ha.sh",
       "group": {
@@ -18,7 +18,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Cleanup stale Home Assistant environment",
+      "label": "hass-cleanup",
       "type": "shell",
       "command": "./.devcontainer/start_ha.sh --cleanup",
       "group": "test",
@@ -29,7 +29,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Run Home Assistant CLI",
+      "label": "hass-cli",
       "type": "shell",
       "command": "docker run --rm -ti -v /etc/machine-id:/etc/machine-id --network=hassio --add-host hassio:172.30.32.2 homeassistant/amd64-hassio-cli:dev",
       "group": "test",
@@ -40,7 +40,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Docker interactive shell",
+      "label": "docker-bash",
       "type": "shell",
       "command": "docker run --rm -it --entrypoint bash dvr163-hass:latest",
       "group": "test",
@@ -51,15 +51,38 @@
       "problemMatcher": []
     },
     {
-      "label": "Docker run container",
+      "label": "docker-run",
       "type": "shell",
-      "command": "docker run --rm -p 25:25 -p 8080:8080 --name dvr163-hass dvr163-hass:latest",
+      "command": "docker run --rm -p 2525:2525 -p 8080:8080 --name dvr163-hass dvr163-hass:latest",
       "group": "test",
       "presentation": {
         "reveal": "always",
         "panel": "new"
       },
       "problemMatcher": []
+    },
+    {
+      "type": "docker-build",
+      "label": "docker-build",
+      "platform": "python",
+      "dockerBuild": {
+        "tag": "dvr163hass:latest",
+        "dockerfile": "${workspaceFolder}/Dockerfile",
+        "context": "${workspaceFolder}",
+        "pull": true
+      }
+    },
+    {
+      "type": "docker-run",
+      "label": "docker-run: debug",
+      "dependsOn": [
+        "docker-build"
+      ],
+      "python": {
+        "args": ["--key", "xxxxxxxxxxxxxxxxxxxxxxxxxxx", "--log_level", "10", "/dev/dvr163-email.txt"],
+        "file": "/app/email2dropbox.py"
+      }
     }
   ]
 }
+

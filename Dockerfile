@@ -14,12 +14,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-setuptools \
+    python-is-python3 \
     postfix \
     dovecot-common \
     dovecot-imapd \
     unzip \
-    wget 
-RUN pip3 install --force-reinstall dropbox==10.2.0
+    wget && \
+    pip3 install dropbox==10.2.0
+
 # RUN wget https://github.com/dropbox/dropbox-sdk-python/archive/master.zip -O dropbox-sdk-python-master.zip && \
 #     unzip dropbox-sdk-python-master.zip && \
 #     rm dropbox-sdk-python-master.zip && \
