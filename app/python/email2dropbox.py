@@ -1,4 +1,5 @@
 import argparse
+import base64
 import dropbox
 import email
 import logging
@@ -7,13 +8,11 @@ import re
 import sys
 
 from datetime import datetime
-from shared import get_logger, init_exception_handler
-
+from shared import get_logger
 
 ####################################################################################################
 #
-# Parse image from a raw email and upload it to dropbox
-# This is super specific to uploading the image from dvr163 emails
+# Parse image from dvr163 email and upload it to dropbox
 #
 ####################################################################################################
 
@@ -23,24 +22,26 @@ parser.add_argument(
     'infile',
     nargs='?',
     type=argparse.FileType('r'),
-    default=sys.stdin,
+    default=sys.stdin, 
     help='MIME-encoded email file(if empty, stdin will be used)')
-parser.add_argument('--access_token', required=True)
-parser.add_argument('--log_level', default='40', help='10=debug 20=info 30=warning 40=error', type=int)
-parser.add_argument('--log_file', default='email2dropbox.log', help='Log file location', type=str)
-args = parser.parse_args() 
+parser.add_argument(
+    '--access_token',
+    required=True)
+parser.add_argument(
+    '--log_level',
+    default='40',
+    help='10=debug 20=info 30=warning 40=error',
+    type=int)
+args = parser.parse_args()
 
 # Configure logging
-logger = get_logger(args.log_level, args.log_file)
+logger = get_logger(args.log_level)
 logger.debug(args)
-
-# Log exceptions
-init_exception_handler(logger)
 
 # Initialize Dropbox client
 dbx = dropbox.Dropbox(args.access_token)
 
-# Read infile (is stdin if no arg) 
+# Read infile (is stdin if no arg)
 stdin_data = args.infile.read()
 args.infile.close()
 logger.debug('in:\n' + stdin_data)
@@ -59,10 +60,10 @@ time = re.sub(r'[-:]', '.', text_parts[1][16:])
 # Read the image
 image_part = msg.get_payload(1).get_payload()
 file_name = date + '/' + time + '.jpg'
-file = io.BytesIO(image_part.decode('base64')).read()
+file = io.BytesIO(base64.b64decode(image_part.encode('ascii'))).read()
 
 # Upload
 logger.debug('Uploading ' + file_name)
 file_data = dbx.files_upload(file, '/ch' + channel_number + '/' + file_name, mute=True)
 
-logger.info('Successfully uploaded ' + file_name)
+logger.info('Successfully uploaded ' + file_name + ' to Dropbox')

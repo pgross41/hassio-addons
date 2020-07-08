@@ -4,11 +4,26 @@
       "name": "Docker: Python - email2dropbox",
       "type": "docker",
       "request": "launch",
-      "preLaunchTask": "docker-run: debug",
+      "preLaunchTask": "docker-run: email2dropbox",
       "python": {
         "pathMappings": [
           {
-            "localRoot": "${workspaceFolder}/root/app",
+            "localRoot": "${workspaceFolder}/app",
+            "remoteRoot": "/app"
+          }
+        ],
+        "projectType": "general"
+      }
+    },
+    {
+      "name": "Docker: Python - email2email",
+      "type": "docker",
+      "request": "launch",
+      "preLaunchTask": "docker-run: email2email",
+      "python": {
+        "pathMappings": [
+          {
+            "localRoot": "${workspaceFolder}/app",
             "remoteRoot": "/app"
           }
         ],

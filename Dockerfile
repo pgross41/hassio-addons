@@ -57,8 +57,8 @@ RUN useradd -p $(openssl passwd -1 $PASSWORD) $USERNAME && \
     mkdir /home/${USERNAME}
 
 # Copy source files 
-COPY root /
-RUN chmod +x /start.sh && \ 
+COPY app /app
+RUN chmod +x /app/start.sh && \ 
     chmod +x /app/handle_email.sh && \
     chmod 777 /app/handle_email_input_buffer
 

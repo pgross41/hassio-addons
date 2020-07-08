@@ -3,12 +3,12 @@ import logging
 import smtplib
 import sys
 
-from shared import get_logger, init_exception_handler
+from shared import get_logger
 
 
 ####################################################################################################
 #
-# Forward a raw email via SMTP
+# Forward any raw email via SMTP
 #
 ####################################################################################################
 
@@ -27,15 +27,11 @@ parser.add_argument('--to_addr', required=True)
 parser.add_argument('--host', default='smtp.gmail.com')
 parser.add_argument('--port', default='587', type=int)
 parser.add_argument('--log_level', default='40', help='10=debug 20=info 30=warning 40=error', type=int)
-parser.add_argument('--log_file', default='email2email.log', help='Log file location', type=str)
 args = parser.parse_args() 
 
 # Configure logging
-logger = get_logger(args.log_level, args.log_file)
+logger = get_logger(args.log_level)
 logger.debug(args)
-
-# Log exceptions
-init_exception_handler(logger)   
 
 # Read infile (is stdin if no arg)
 stdin_data = args.infile.read()
