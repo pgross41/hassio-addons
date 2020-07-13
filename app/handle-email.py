@@ -3,22 +3,34 @@ import dropbox
 import email
 import io
 import logging
+import os
 import re
 import smtplib
 import sys
 
+###############################################################################
 # Configuration
-# TODO: Make configurable
-log_level = "10"
-dropbox_access_token = None
-email_host = 'smtp.gmail.com'
-email_port = 587
-email_username = None
-email_password = None
-email_from_addr = None
-email_to_addr = None
+###############################################################################
 
+# General 
+log_level = os.environ.get('log_level', "10")
 
+# Dropbox
+dropbox_access_token = os.environ.get('dropbox_access_token', None)
+
+# Email
+email_host = os.environ.get('email_host', 'smtp.gmail.com')
+email_port = os.environ.get('email_port', 587)
+email_username = os.environ.get('email_username', None)
+email_password = os.environ.get('email_password', None)
+email_from_addr = os.environ.get('email_from_addr', None)
+email_to_addr = os.environ.get('email_to_addr', None)
+
+###############################################################################
+# Destinations
+###############################################################################
+
+# Parse email and upload to dropbox
 def to_dropbox(msg):
 
     # Initialize Dropbox client
@@ -41,29 +53,32 @@ def to_dropbox(msg):
     file = io.BytesIO(base64.b64decode(image_part.encode('ascii'))).read()
 
     # Upload
-    logger.debug('Uploading ' + file_name)
-    # file_data = dbx.files_upload(file, '/ch' + channel_number + '/' + file_name, mute=True)
-    file_data = dbx.files_upload(file, '/ch' + '0' + '/' + file_name, mute=True)
+    file_path = '/ch' + channel_number + '/' + file_name
+    logger.debug('Uploading ' + file_path)
+    file_data = dbx.files_upload(file, file_path, mute=True)
 
-    logger.info('Successfully uploaded ' + file_name + ' to Dropbox')  
+    logger.info('Uploaded ' + file_path + ' to Dropbox')  
 
-
+# Forward email somewhere else
 def to_email(msg_data):
     server = smtplib.SMTP(email_host, email_port)
     server.starttls()
     server.login(email_username, email_password)
     server.sendmail(email_from_addr, email_to_addr, msg_data)
     server.quit()
-    logger.debug("Sent")
+    logger.info("Email sent")
 
+###############################################################################
+# Main
+###############################################################################
 
 # Log to stdout
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG) 
+logger.setLevel(log_level) 
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
 logger.addHandler(handler) 
-logger.info('Ready!')
+logger.info('Starting')
 
 # Accept a file name, otherwise read from stdin
 email_data=""
@@ -74,11 +89,11 @@ if(sys.argv[1]):
 else:
     email_data = sys.stdin.read()
     sys.stdin.close()
-
-logger.debug('in:\n' + email_data)
+logger.debug('email_data:\n' + email_data)
 msg = email.message_from_string(email_data)    
 
 # Do things with the email
-# TODO: Run only ones that are configured
-to_dropbox(msg)
-to_email(email_data)
+if(dropbox_access_token): 
+    to_dropbox(msg)
+if(email_username or email_password or email_from_addr or email_to_addr): 
+    to_email(email_data)
