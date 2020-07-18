@@ -4,7 +4,7 @@
 	"name": "Home Assistant Add-On",
 	"context": "..",
 	"dockerFile": "Dockerfile",
-	"appPort": [8123, 2525],
+	"appPort": [8123, 25],
 	"runArgs": [
 		"-e",
 		"GIT_EDITOR=code --wait",

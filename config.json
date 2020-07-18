@@ -8,7 +8,7 @@
   "boot": "auto",
   "options": {},
   "ports": {
-    "2525/tcp": 2525
+    "25/tcp": 25
   },
   "schema": {}, 
   "arch": ["amd64", "armv7", "armhf", "i386" , "aarch64"]

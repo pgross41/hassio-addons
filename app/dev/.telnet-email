@@ -1,3 +1,4 @@
+telnet localhost 25
 ehlo hass
 mail from: hass
 rcpt to: hass

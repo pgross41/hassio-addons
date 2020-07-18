@@ -1,9 +1,9 @@
 #!/bin/bash
 
-echo Starting SMTP and web servers 
-
 # Run dovecot
-service dovecot start
+echo Starting dovecot
+dovecot
 
 # Run postfix in the foreground
+echo Starting postfix
 postfix start-fg

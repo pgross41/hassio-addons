@@ -13,7 +13,7 @@ import sys
 ###############################################################################
 
 # General 
-log_level = os.environ.get('log_level', "10")
+log_level = os.environ.get('log_level', 10)
 
 # Dropbox
 dropbox_access_token = os.environ.get('dropbox_access_token', None)
@@ -82,7 +82,7 @@ logger.info('Starting')
 
 # Accept a file name, otherwise read from stdin
 email_data=""
-if(sys.argv[1]): 
+if(sys.argv[1]):  # Todo: This is throwing index out of range
     f = open(sys.argv[1], "r")
     email_data = f.read() 
     f.close()
@@ -97,3 +97,7 @@ if(dropbox_access_token):
     to_dropbox(msg)
 if(email_username or email_password or email_from_addr or email_to_addr): 
     to_email(email_data)
+
+
+# TODO: wrap each "to" in a try/catch
+# TODO: message if no action taken

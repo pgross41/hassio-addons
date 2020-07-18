@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ubuntu:20.04
+ARG BUILD_FROM=homeassistant/amd64-base:latest
 FROM $BUILD_FROM
 
 ENV LANG=C.UTF-8
@@ -6,20 +6,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 LABEL io.hass.version="VERSION" io.hass.type="addon" io.hass.arch="armhf|aarch64|i386|amd64" name=dvr163-hass Version=0.0.1
 
-EXPOSE 2525 
+EXPOSE 25 
 EXPOSE 8080
 
 # Dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk update && apk add \
     python3 \
-    python3-pip \
-    python3-setuptools \
-    python-is-python3 \
+    py3-pip \
     postfix \
-    dovecot-common \
-    dovecot-imapd \
-    unzip \
-    wget && \
+    dovecot && \
     pip3 install dropbox==10.2.0
 
 # Server Configuration
@@ -31,7 +26,7 @@ RUN true && \
     echo "smtpd_sasl_path = private/auth" >> /etc/postfix/main.cf && \
     echo "smtpd_sasl_auth_enable = yes" >> /etc/postfix/main.cf && \
     # Tell Dovecot to listen for SASL authentication requests from Postfix
-    echo " \
+    printf " \
     \nservice auth { \
     \n    unix_listener /var/spool/postfix/private/auth { \
     \n        mode = 0660 \
@@ -46,9 +41,9 @@ RUN true && \
     echo "postlog   unix-dgram n  -       n       -       1       postlogd" >> /etc/postfix/master.cf && \
     echo "maillog_file = /dev/stdout" >> /etc/postfix/main.cf && \
     # Create mail user
-    useradd -p $(openssl passwd -1 $PASSWORD) $USERNAME && \
-    mkdir /home/${USERNAME} && \
-    # Add mail alias script to handle mail
+    adduser ${USERNAME} -D && \
+    echo "${USERNAME}:${PASSWORD}" | chpasswd && \
+    # Add mail alias script to handcatle mail
     echo "${USERNAME}: \"|python3 /app/handle-email.py\"" >> /etc/aliases && \
     newaliases     
 
