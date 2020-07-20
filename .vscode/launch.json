@@ -4,7 +4,7 @@
       "name": "Docker: Python - debug",
       "type": "docker",
       "request": "launch",
-      "preLaunchTask": "docker-run: debug",
+      "preLaunchTask": "docker-run: handle-email.py",
       "python": {
         "pathMappings": [
           {

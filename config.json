@@ -6,10 +6,46 @@
   "url": "https://github.com/pgross41/dvr163-hass",
   "startup": "application",
   "boot": "auto",
-  "options": {},
+  "options": {
+    "log_level": 10,
+    "dropbox": {
+      "enabled": false,
+      "access_token": ""
+    },
+    "email": {
+      "enabled": false,
+      "host": "smtp.gmail.com",
+      "port": 587,
+      "username": "",
+      "password": "",
+      "from_addr": "",
+      "to_addr": ""
+    }
+  },
+  "schema": {
+    "log_level": "int",
+    "dropbox": {
+      "enabled": "bool",
+      "access_token": "str?"
+    },
+    "email": {
+      "enabled": "bool",
+      "host": "str?",
+      "port": "int?",
+      "username": "str?",
+      "password": "str?",
+      "from_addr": "str?",
+      "to_addr": "str?"
+    }
+  },
   "ports": {
     "25/tcp": 25
   },
-  "schema": {}, 
-  "arch": ["amd64", "armv7", "armhf", "i386" , "aarch64"]
+  "arch": [
+    "amd64",
+    "armv7",
+    "armhf",
+    "i386",
+    "aarch64"
+  ]
 }

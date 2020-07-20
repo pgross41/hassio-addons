@@ -17,10 +17,12 @@ RUN apk update && apk add \
     dovecot && \
     pip3 install dropbox==10.2.0
 
-# Server Configuration
+# Configuration
 ARG USERNAME=hass
 ARG PASSWORD=hass
 RUN true && \
+    # Use python3 
+    ln -s /usr/bin/python3 /usr/bin/python && \
     # Tell Postfix to use Dovecot for SASL authentication
     echo "smtpd_sasl_type = dovecot" >> /etc/postfix/main.cf && \
     echo "smtpd_sasl_path = private/auth" >> /etc/postfix/main.cf && \
@@ -43,13 +45,14 @@ RUN true && \
     # Create mail user
     adduser ${USERNAME} -D && \
     echo "${USERNAME}:${PASSWORD}" | chpasswd && \
-    # Add mail alias script to handcatle mail
+    # Add mail alias script to handle mail
+    # TODO: Not working in Alpine
     echo "${USERNAME}: \"|python3 /app/handle-email.py\"" >> /etc/aliases && \
     newaliases     
 
 # Copy source files 
 COPY app /app
-RUN chmod -R 777 /app
+RUN chmod -R 777 /app 
 
 # Run the app
 CMD ["/app/start.sh"]

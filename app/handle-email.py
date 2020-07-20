@@ -13,12 +13,14 @@ import sys
 ###############################################################################
 
 # General 
-log_level = os.environ.get('log_level', 10)
+log_level = int(os.environ.get('log_level', 10))
 
 # Dropbox
+dropbox_enabled = bool(os.environ.get('dropbox_enabled', False))
 dropbox_access_token = os.environ.get('dropbox_access_token', None)
 
 # Email
+email_enabled = bool(os.environ.get('email_enabled', False))
 email_host = os.environ.get('email_host', 'smtp.gmail.com')
 email_port = os.environ.get('email_port', 587)
 email_username = os.environ.get('email_username', None)
@@ -93,11 +95,11 @@ logger.debug('email_data:\n' + email_data)
 msg = email.message_from_string(email_data)    
 
 # Do things with the email
-if(dropbox_access_token): 
+if(dropbox_enabled): 
     to_dropbox(msg)
-if(email_username or email_password or email_from_addr or email_to_addr): 
+if(email_enabled): 
     to_email(email_data)
-
+if(not(dropbox_enabled) and not(email_enabled)): 
+    logger.error("Message received but no desitnations enabled!")
 
 # TODO: wrap each "to" in a try/catch
-# TODO: message if no action taken
