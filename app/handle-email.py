@@ -95,11 +95,19 @@ logger.debug('email_data:\n' + email_data)
 msg = email.message_from_string(email_data)    
 
 # Do things with the email
-if(dropbox_enabled): 
-    to_dropbox(msg)
-if(email_enabled): 
-    to_email(email_data)
 if(not(dropbox_enabled) and not(email_enabled)): 
     logger.error("Message received but no desitnations enabled!")
+    sys.exit()
 
-# TODO: wrap each "to" in a try/catch
+if(dropbox_enabled): 
+    try: 
+        to_dropbox(msg)
+    except:
+        logger.error( "Error uploading to dropbox: " + sys.exc_info()[0] )
+
+if(email_enabled): 
+    try: 
+        to_email(email_data)
+    except: 
+        logger.error( "Error forwarding email: " + sys.exc_info()[0] )
+
