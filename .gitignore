@@ -6,6 +6,3 @@ __pycache__/
 # Env var files
 .env
 env/
-
-# IDE 
-/.vscode/tasks.json

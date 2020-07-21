@@ -1,0 +1,89 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "hass-run",
+      "type": "shell",
+      "command": "./.devcontainer/start_ha.sh",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "hass-cleanup",
+      "type": "shell",
+      "command": "./.devcontainer/start_ha.sh --cleanup",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "hass-cli",
+      "type": "shell",
+      "command": "docker run --rm -ti -v /etc/machine-id:/etc/machine-id --network=hassio --add-host hassio:172.30.32.2 homeassistant/amd64-hassio-cli:dev",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker-bash",
+      "type": "shell",
+      "command": "docker run --rm -it --entrypoint bash dvr163-hass:latest",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "docker-run",
+      "type": "shell",
+      "command": "docker run --rm --env-file=${workspaceFolder}/env/.env -p=25:25 -p=8080:8080 --name=dvr163-hass dvr163-hass:latest",
+      "dependsOn": ["docker-build"],
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "docker-build",
+      "label": "docker-build",
+      "platform": "python",
+      "dockerBuild": {
+        "tag": "dvr163-hass:latest",
+        "dockerfile": "${workspaceFolder}/Dockerfile",
+        "context": "${workspaceFolder}",
+        "pull": true
+      }
+    },
+    {
+      "type": "docker-run",
+      "label": "docker-run: handle-email.py",
+      "dependsOn": ["docker-build"],
+      "dockerRun": {
+        "envFiles": ["env/.env"]
+      },
+      "python": {
+        "file": "/app/handle-email.py",
+        "args": ["/app/dev/dvr163-email.txt"]
+      }
+    }
+  ]
+}

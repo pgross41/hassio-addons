@@ -1,3 +1,8 @@
+# TODO: 
+# Fix piping email to script :(
+# Output python to docker stdout
+
+
 ARG BUILD_FROM=homeassistant/amd64-base:latest
 FROM $BUILD_FROM
 
@@ -45,14 +50,19 @@ RUN true && \
     # Create mail user
     adduser ${USERNAME} -D && \
     echo "${USERNAME}:${PASSWORD}" | chpasswd && \
+    # Send mail to python script per https://thecodingmachine.io/triggering-a-php-script-when-your-postfix-server-receives-a-mail
+    echo "myhook unix - n n - - pipe" >> /etc/postfix/master.cf && \
+    echo "  flags=F user=${USERNAME} argv=python3 -u /app/handle-email.py ${sender} ${size} ${recipient}" >> /etc/postfix/master.cf && \
+    echo "smtp      inet  n       -       -       -       -       smtpd" >> /etc/postfix/master.cf && \
+    echo "    -o content_filter=myhook:dummy" >> /etc/postfix/master.cf && \
+    echo "pickup    fifo  n       -       -       60      1       pickup" >> /etc/postfix/master.cf && \
+    echo "    -o content_filter=myhook:dummy" >> /etc/postfix/master.cf && \
     # Add mail alias script to handle mail
-    # TODO: Not working in Alpine
-    echo "${USERNAME}: \"|python3 /app/handle-email.py\"" >> /etc/aliases && \
-    newaliases     
+    newaliases 
 
-# Copy source files 
+# Copy source files
 COPY app /app
-RUN chmod -R 777 /app 
+RUN chmod -R 777 /app
 
 # Run the app
 CMD ["/app/start.sh"]

@@ -1,3 +1,7 @@
+# TODO: 
+# - FIGURE OUT HOW TO OUTPUT TO DOCKER
+# - I guess read from options.json because the env vars aren't working
+
 import base64
 import dropbox
 import email
@@ -21,6 +25,7 @@ dropbox_access_token = os.environ.get('dropbox_access_token', None)
 
 # Email
 email_enabled = bool(os.environ.get('email_enabled', False))
+print(email_enabled) # TODO: Ugh
 email_host = os.environ.get('email_host', 'smtp.gmail.com')
 email_port = os.environ.get('email_port', 587)
 email_username = os.environ.get('email_username', None)
@@ -74,7 +79,7 @@ def to_email(msg_data):
 # Main
 ###############################################################################
 
-# Log to stdout
+# Log to stdout 
 logger = logging.getLogger(__name__)
 logger.setLevel(log_level) 
 handler = logging.StreamHandler(sys.stdout)
@@ -84,7 +89,7 @@ logger.info('Starting')
 
 # Accept a file name, otherwise read from stdin
 email_data=""
-if(sys.argv[1]):  # Todo: This is throwing index out of range
+if(len(sys.argv) > 1 and sys.argv[1]): 
     f = open(sys.argv[1], "r")
     email_data = f.read() 
     f.close()
@@ -110,4 +115,3 @@ if(email_enabled):
         to_email(email_data)
     except: 
         logger.error( "Error forwarding email: " + sys.exc_info()[0] )
-
