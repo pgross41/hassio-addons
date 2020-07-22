@@ -1,7 +1,4 @@
-# TODO: 
-# Fix piping email to script :(
-# Output python to docker stdout
-
+# Postfix SMTP server 
 
 ARG BUILD_FROM=homeassistant/amd64-base:latest
 FROM $BUILD_FROM
@@ -12,22 +9,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 LABEL io.hass.version="VERSION" io.hass.type="addon" io.hass.arch="armhf|aarch64|i386|amd64" name=dvr163-hass Version=0.0.1
 
 EXPOSE 25 
-EXPOSE 8080
 
 # Dependencies
 RUN apk update && apk add \
-    python3 \
-    py3-pip \
     postfix \
-    dovecot && \
-    pip3 install dropbox==10.2.0
+    dovecot
 
 # Configuration
 ARG USERNAME=hass
 ARG PASSWORD=hass
 RUN true && \
-    # Use python3 
-    ln -s /usr/bin/python3 /usr/bin/python && \
     # Tell Postfix to use Dovecot for SASL authentication
     echo "smtpd_sasl_type = dovecot" >> /etc/postfix/main.cf && \
     echo "smtpd_sasl_path = private/auth" >> /etc/postfix/main.cf && \
@@ -49,10 +40,11 @@ RUN true && \
     echo "maillog_file = /dev/stdout" >> /etc/postfix/main.cf && \
     # Create mail user
     adduser ${USERNAME} -D && \
+    addgroup ${USERNAME} root && \
     echo "${USERNAME}:${PASSWORD}" | chpasswd && \
-    # Send mail to python script per https://thecodingmachine.io/triggering-a-php-script-when-your-postfix-server-receives-a-mail
+    # Send mail to shell script per https://thecodingmachine.io/triggering-a-php-script-when-your-postfix-server-receives-a-mail
     echo "myhook unix - n n - - pipe" >> /etc/postfix/master.cf && \
-    echo "  flags=F user=${USERNAME} argv=python3 -u /app/handle-email.py ${sender} ${size} ${recipient}" >> /etc/postfix/master.cf && \
+    echo "  flags=F user=${USERNAME} argv=python3 -u /app/handle-email.py >> /proc/1/fd/1" >> /etc/postfix/master.cf && \
     echo "smtp      inet  n       -       -       -       -       smtpd" >> /etc/postfix/master.cf && \
     echo "    -o content_filter=myhook:dummy" >> /etc/postfix/master.cf && \
     echo "pickup    fifo  n       -       -       60      1       pickup" >> /etc/postfix/master.cf && \
@@ -60,9 +52,5 @@ RUN true && \
     # Add mail alias script to handle mail
     newaliases 
 
-# Copy source files
-COPY app /app
-RUN chmod -R 777 /app
-
-# Run the app
-CMD ["/app/start.sh"]
+# Start dovecot and run postfix in the foreground
+CMD ["sh", "-c", "dovecot && postfix start-fg"]

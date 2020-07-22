@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  postfix:
+    build:
+      context: .
+      dockerfile: ./docker/postfix/Dockerfile
+    ports:
+      - 25:25
+  python: 
+    build:
+      context: .
+      dockerfile: ./docker/python/Dockerfile
+    ports:
+      - 8080:8080
+    volumes:
+      - ./app:/app
