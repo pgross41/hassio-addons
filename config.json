@@ -1,5 +1,6 @@
 {
   "name": "Eseenet/dvr163 NVR",
+  "docker_api": true,
   "version": "0.1",
   "description": "Home Assistant Add-on for interacting with Eseenet/dvr163 NVR",
   "slug": "dvr163",

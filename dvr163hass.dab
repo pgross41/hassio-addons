@@ -1,0 +1,29 @@
+{
+  "Services": {
+    "postfix": {
+      "Image": "pgross41/dvr163-hass-postfix@sha256:fffb1dc0674b59eb827edf25f622d8c6d5539dc050ca2ec23bf5f76aa77e6d9d", 
+      "Networks": [
+        "default"
+      ], 
+      "Ports": [
+        {
+          "Port": 1525, 
+          "Protocol": "tcp"
+        }
+      ]
+    }, 
+    "python": {
+      "Image": "pgross41/dvr163-hass-python@sha256:86d11b392942afbb88254c41298907a530a1a546b1e5aae7b9416f247c1abe88", 
+      "Networks": [
+        "default"
+      ], 
+      "Ports": [
+        {
+          "Port": 8080, 
+          "Protocol": "tcp"
+        }
+      ]
+    }
+  }, 
+  "Version": "0.1"
+}

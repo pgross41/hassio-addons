@@ -4,13 +4,17 @@
 	"name": "Home Assistant Add-On",
 	"context": "..",
 	"dockerFile": "Dockerfile",
-	"appPort": [8123, 25],
+	"appPort": [
+		25,
+		8123,
+		8080
+	],
 	"runArgs": [
 		"-e",
 		"GIT_EDITOR=code --wait",
 		"--privileged"
 	],
-	"settings": { 
+	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash"
 	},
 	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/test_hassio/addons/local/dvr163-hass,type=bind,consistency=delegated",
@@ -18,5 +22,8 @@
 	"mounts": [
 		// Cache docker images between devcontainer rebuilds (and share between devcontainers)
 		"source=vsc-hassio-docker,target=/var/lib/docker,type=volume"
+	],
+	"extensions": [
+		"ms-azuretools.vscode-docker@1.3.1"
 	]
 }
