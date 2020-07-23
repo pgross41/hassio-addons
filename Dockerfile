@@ -28,11 +28,11 @@ EXPOSE 25
 EXPOSE 8080
 
 # Install container dependencies
-RUN apk update && apk add \
+RUN apk update && apk add --no-cache \
     postfix \
     dovecot \ 
     python3 \
-    py3-pip 
+    py3-pip  
 
 # Configure postfix/dovecot
 ARG USERNAME=hass
@@ -71,12 +71,16 @@ RUN true && \
     # Add mail alias script to handle mail
     newaliases 
 
-# Configure python
-COPY app /app
+
+# Configure Python
+COPY requirements.txt /app/
 WORKDIR /app
-RUN chmod -R 777 /app && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
-    python -m pip install -r requirements.txt
+RUN pip install -r requirements.txt && \
+    ln -s /usr/bin/python3 /usr/bin/python
+
+# Copy source code
+COPY app /app
+RUN chmod -R 777 /app 
 
 # Run the app
 CMD ["/app/start.sh"]
