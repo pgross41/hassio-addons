@@ -1,6 +1,4 @@
-# TODO: 
-# - FIGURE OUT HOW TO OUTPUT TO DOCKER
-# - I guess read from options.json because the env vars aren't working
+# TODO: I guess read from options.json because the env vars aren't working
 
 import base64
 import dropbox

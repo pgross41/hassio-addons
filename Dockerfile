@@ -1,9 +1,19 @@
 ARG BUILD_FROM=homeassistant/amd64-base:latest
 FROM $BUILD_FROM
 
+# Computer UTF-8
 ENV LANG=C.UTF-8
+
+# Silence configuration prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE 1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED 1
+
+# Labels, some are for Home Assistant
 LABEL \
     io.hass.version="VERSION" \
     io.hass.type="addon" \
@@ -11,21 +21,20 @@ LABEL \
     name=dvr163-hass \
     Version=0.0.1
 
+# Postix SMTP server
 EXPOSE 25 
+
+# Python web server
 EXPOSE 8080
 
-# Dependencies
+# Install container dependencies
 RUN apk update && apk add \
     postfix \
     dovecot \ 
     python3 \
-    py3-pip && \
-    pip3 install dropbox==10.2.0    
+    py3-pip 
 
-# Use python3 
-RUN ln -s /usr/bin/python3 /usr/bin/python    
-
-# SMTP Configuration
+# Configure postfix/dovecot
 ARG USERNAME=hass
 ARG PASSWORD=hass
 RUN true && \
@@ -62,12 +71,12 @@ RUN true && \
     # Add mail alias script to handle mail
     newaliases 
 
-# Copy source files
+# Configure python
 COPY app /app
-RUN chmod -R 777 /app
-
-# Python 3 HTTP Server serves the current working dir
 WORKDIR /app
+RUN chmod -R 777 /app && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    python -m pip install -r requirements.txt
 
 # Run the app
 CMD ["/app/start.sh"]

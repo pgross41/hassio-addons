@@ -1,10 +1,10 @@
 {
   "configurations": [
     {
-      "name": "Docker: Python - debug",
+      "name": "Docker: Python - Flask",
       "type": "docker",
       "request": "launch",
-      "preLaunchTask": "docker-run: handle-email.py",
+      "preLaunchTask": "docker-run: debug",
       "python": {
         "pathMappings": [
           {
@@ -12,7 +12,7 @@
             "remoteRoot": "/app"
           }
         ],
-        "projectType": "general"
+        "projectType": "flask"
       }
     }
   ]
