@@ -1,19 +1,11 @@
 version: '2'
 
 services:
-  postfix:
+  dvr163-hass:
     build:
       context: .
-      dockerfile: ./docker/postfix/Dockerfile
-    image: pgross41/dvr163-hass-postfix
     ports:
       - 25:25
-  python: 
-    build:
-      context: .
-      dockerfile: ./docker/python/Dockerfile
-    image: pgross41/dvr163-hass-python
-    ports:
       - 8080:8080
     volumes:
       - ./app:/app
