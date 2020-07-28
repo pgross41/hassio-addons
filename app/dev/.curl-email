@@ -1,0 +1,4 @@
+curl smtp://localhost \
+    --mail-from hass \
+    --mail-rcpt hass \
+    --upload-file /app/dev/text-email.txt

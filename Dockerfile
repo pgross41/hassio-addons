@@ -54,7 +54,7 @@ RUN true && \
     # Enable plaintext logins
     echo "disable_plaintext_auth = no" >> /etc/dovecot/conf.d/10-auth.conf && \
     echo "auth_mechanisms = plain login" >> /etc/dovecot/conf.d/10-auth.conf && \
-    # Write logginng to /proc/1/fd/1 (Docker output)
+    # Write logginng to Docker output (i.e. /proc/1/fd/1)
     echo "postlog   unix-dgram n  -       n       -       1       postlogd" >> /etc/postfix/master.cf && \
     echo "maillog_file_prefixes = /proc" >> /etc/postfix/main.cf && \
     echo "maillog_file = /proc/1/fd/1" >> /etc/postfix/main.cf && \
@@ -62,11 +62,10 @@ RUN true && \
     adduser ${USERNAME} -D && \
     addgroup ${USERNAME} root && \
     echo "${USERNAME}:${PASSWORD}" | chpasswd && \
-    # Send mail to shell script per https://thecodingmachine.io/triggering-a-php-script-when-your-postfix-server-receives-a-mail
+    # Pipe mail into POST request so we can handle it in Python
+    # More info: https://thecodingmachine.io/triggering-a-php-script-when-your-postfix-server-receives-a-mail
     echo "myhook unix - n n - - pipe" >> /etc/postfix/master.cf && \
-    # echo "  flags=F user=${USERNAME} argv=curl -H 'Content-Type: text/plain' -d @- http://localhost:8080/api/email" >> /etc/postfix/master.cf && \
-    # echo "  flags=F user=${USERNAME} argv=curl -H 'Content-Type: text/plain' -d dumbbbb http://localhost:8080/api/email" >> /etc/postfix/master.cf && \
-    echo "  flags=F user=${USERNAME} argv=/app/handle_email.sh" >> /etc/postfix/master.cf && \
+    echo "  flags=F user=${USERNAME} argv=curl -H {Content-Type: text/plain} --data-binary @- http://localhost:8080/api/email" >> /etc/postfix/master.cf && \
     echo "smtp      inet  n       -       -       -       -       smtpd" >> /etc/postfix/master.cf && \
     echo "    -o content_filter=myhook:dummy" >> /etc/postfix/master.cf && \
     echo "pickup    fifo  n       -       -       60      1       pickup" >> /etc/postfix/master.cf && \
