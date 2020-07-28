@@ -11,4 +11,3 @@ postfix start
 # Start python web server in the foreground
 echo Starting python server
 gunicorn --bind 0.0.0.0:8080 main:app
-echo Listening on port 8080
