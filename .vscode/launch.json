@@ -4,7 +4,7 @@
       "name": "Docker: Python - Flask",
       "type": "docker",
       "request": "launch",
-      "preLaunchTask": "docker-run: debug",
+      "preLaunchTask": "docker-run: flask",
       "python": {
         "pathMappings": [
           {
@@ -13,6 +13,21 @@
           }
         ],
         "projectType": "flask"
+      }
+    },
+    {
+      "name": "Docker: Python - handle_email.py",
+      "type": "docker",
+      "request": "launch",
+      "preLaunchTask": "docker-run: handle_email.py",
+      "python": {
+        "pathMappings": [
+          {
+            "localRoot": "${workspaceFolder}/app",
+            "remoteRoot": "/app"
+          }
+        ],
+        "projectType": "general"
       }
     }
   ]

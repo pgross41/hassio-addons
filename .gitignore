@@ -3,6 +3,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Env var files
-.env
-env/
+# Runtime environment variables
+/app/dev/env/

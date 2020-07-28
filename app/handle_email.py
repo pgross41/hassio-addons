@@ -1,9 +1,8 @@
-# TODO: I guess read from options.json because the env vars aren't working
-
 import base64
 import dropbox
 import email
 import io
+import json
 import logging
 import os
 import re
@@ -14,22 +13,9 @@ import sys
 # Configuration
 ###############################################################################
 
-# General 
-log_level = int(os.environ.get('log_level', 10))
-
-# Dropbox
-dropbox_enabled = bool(os.environ.get('dropbox_enabled', False))
-dropbox_access_token = os.environ.get('dropbox_access_token', None)
-
-# Email
-email_enabled = bool(os.environ.get('email_enabled', False))
-print(email_enabled) # TODO: Ugh
-email_host = os.environ.get('email_host', 'smtp.gmail.com')
-email_port = os.environ.get('email_port', 587)
-email_username = os.environ.get('email_username', None)
-email_password = os.environ.get('email_password', None)
-email_from_addr = os.environ.get('email_from_addr', None)
-email_to_addr = os.environ.get('email_to_addr', None)
+options_path = os.environ.get('OPTIONS_PATH', '/data/options')
+with open(options_path) as f:
+  options = json.load(f)
 
 ###############################################################################
 # Destinations
@@ -39,7 +25,7 @@ email_to_addr = os.environ.get('email_to_addr', None)
 def to_dropbox(msg):
 
     # Initialize Dropbox client
-    dbx = dropbox.Dropbox(dropbox_access_token)
+    dbx = dropbox.Dropbox(options['dropbox_access_token'])
     
     # Parse out the html text
     # TODO: Simplify with this? https://www.crummy.com/software/BeautifulSoup/bs4/doc/ 
@@ -66,10 +52,10 @@ def to_dropbox(msg):
 
 # Forward email somewhere else
 def to_email(msg_data):
-    server = smtplib.SMTP(email_host, email_port)
+    server = smtplib.SMTP(options['email_host'], options['email_port'])
     server.starttls()
-    server.login(email_username, email_password)
-    server.sendmail(email_from_addr, email_to_addr, msg_data)
+    server.login(options['email_username'], options['email_password'])
+    server.sendmail(options['email_from_addr'], options['email_to_addr'], msg_data)
     server.quit()
     logger.info("Email sent")
 
@@ -79,7 +65,7 @@ def to_email(msg_data):
 
 # Log to stdout 
 logger = logging.getLogger(__name__)
-logger.setLevel(log_level) 
+logger.setLevel(options['log_level']) 
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
 logger.addHandler(handler) 
@@ -98,6 +84,10 @@ logger.debug('email_data:\n' + email_data)
 msg = email.message_from_string(email_data)    
 
 # Do things with the email
+
+dropbox_enabled = options['dropbox_enabled']
+email_enabled = options['email_enabled']
+
 if(not(dropbox_enabled) and not(email_enabled)): 
     logger.error("Message received but no desitnations enabled!")
     sys.exit()
