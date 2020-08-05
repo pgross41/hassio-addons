@@ -38,10 +38,12 @@ RUN apk update && apk add --no-cache \
 ARG USERNAME=hass
 ARG PASSWORD=hass
 RUN true && \
+    #
     # Tell Postfix to use Dovecot for SASL authentication
     echo "smtpd_sasl_type = dovecot" >> /etc/postfix/main.cf && \
     echo "smtpd_sasl_path = private/auth" >> /etc/postfix/main.cf && \
     echo "smtpd_sasl_auth_enable = yes" >> /etc/postfix/main.cf && \
+    #
     # Tell Dovecot to listen for SASL authentication requests from Postfix
     printf " \
     \nservice auth { \
@@ -51,17 +53,26 @@ RUN true && \
     \n        group = postfix \
     \n    } \
     \n}" > /etc/dovecot/conf.d/10-master.conf && \
+    #
     # Enable plaintext logins
     echo "disable_plaintext_auth = no" >> /etc/dovecot/conf.d/10-auth.conf && \
     echo "auth_mechanisms = plain login" >> /etc/dovecot/conf.d/10-auth.conf && \
-    # Write logginng to Docker output (i.e. /proc/1/fd/1)
-    echo "postlog   unix-dgram n  -       n       -       1       postlogd" >> /etc/postfix/master.cf && \
-    echo "maillog_file_prefixes = /proc" >> /etc/postfix/main.cf && \
-    echo "maillog_file = /proc/1/fd/1" >> /etc/postfix/main.cf && \
+    #
+    # Fix postfix error in log: warning: master_wakeup_timer_event: service pickup(public/pickup): Connection refused
+    # More info: https://talk.plesk.com/threads/postfix-master-connection-refused.303699/
+    sed -i 's/pickup    unix/pickup    fifo/g' /etc/postfix/master.cf && \
+    sed -i 's/qmgr      unix/qmgr      fifo/g' /etc/postfix/master.cf && \
+    #
+    # Write logginng to Docker output (i.e. /proc/1/fd/1) - Useful for development but too cluttered for production
+    # echo "postlog   unix-dgram n  -       n       -       1       postlogd" >> /etc/postfix/master.cf && \
+    # echo "maillog_file_prefixes = /proc" >> /etc/postfix/main.cf && \
+    # echo "maillog_file = /proc/1/fd/1" >> /etc/postfix/main.cf && \ 
+    #
     # Create mail user
     adduser ${USERNAME} -D && \
     addgroup ${USERNAME} root && \
     echo "${USERNAME}:${PASSWORD}" | chpasswd && \
+    #
     # Pipe mail into POST request so we can handle it in Python
     # More info: https://thecodingmachine.io/triggering-a-php-script-when-your-postfix-server-receives-a-mail
     echo "myhook unix - n n - - pipe" >> /etc/postfix/master.cf && \
@@ -70,6 +81,7 @@ RUN true && \
     echo "    -o content_filter=myhook:dummy" >> /etc/postfix/master.cf && \
     echo "pickup    fifo  n       -       -       60      1       pickup" >> /etc/postfix/master.cf && \
     echo "    -o content_filter=myhook:dummy" >> /etc/postfix/master.cf && \
+    #
     # Add mail alias script to handle mail
     newaliases 
 

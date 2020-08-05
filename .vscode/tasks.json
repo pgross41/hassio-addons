@@ -83,7 +83,8 @@
       ],
       "dockerRun": {
         "env": {
-          "FLASK_APP": "main.py"
+          "FLASK_APP": "main.py",
+          "OPTIONS_PATH": "/app/dev/env/options.json"
         }
       },
       "python": {

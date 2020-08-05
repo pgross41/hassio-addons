@@ -1,4 +1,6 @@
+# Test command for sending an email via curl
+
 curl smtp://localhost \
     --mail-from hass \
     --mail-rcpt hass \
-    --upload-file /app/dev/text-email.txt
+    --upload-file /app/dev/dvr163-email.txt

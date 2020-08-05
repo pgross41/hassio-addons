@@ -1,3 +1,6 @@
+# Test commands for sending an email via telnet
+# Cannot be copy/pasted all at once, each command must be entered into telnet session
+
 telnet localhost 25
 ehlo hass
 mail from: hass

@@ -1,105 +1,91 @@
 import base64
+from shared import options, logger
 import dropbox
 import email
 import io
-import json
-import logging
-import os
 import re
 import smtplib
 import sys
-
-###############################################################################
-# Configuration
-###############################################################################
-
-options_path = os.environ.get('OPTIONS_PATH', '/data/options')
-with open(options_path) as f:
-  options = json.load(f)
-
-###############################################################################
-# Destinations
-###############################################################################
 
 # Parse email and upload to dropbox
 def to_dropbox(msg):
 
     # Initialize Dropbox client
-    dbx = dropbox.Dropbox(options['dropbox_access_token'])
-    
+    dbx = dropbox.Dropbox(options["dropbox"]["access_token"])
+
     # Parse out the html text
-    # TODO: Simplify with this? https://www.crummy.com/software/BeautifulSoup/bs4/doc/ 
+    # TODO: Simplify with this? https://www.crummy.com/software/BeautifulSoup/bs4/doc/
     html_part = msg.get_payload(0).get_payload()
-    clean_html = re.sub(r'(?is)<(script|style).*?>.*?(</\1>)', '', html_part.strip()) # Remove style tags
-    html_text = re.sub(r'(?s)<.*?>', ' ', clean_html).strip() # Get text content
+    # Remove style tags
+    clean_html = re.sub(r"(?is)<(script|style).*?>.*?(</\1>)", "", html_part.strip())
+    # Get text content
+    html_text = re.sub(r"(?s)<.*?>", " ", clean_html).strip()
     text_parts = html_text.split("; ")
-    logger.debug('Found HTML text: ' + html_text)
+    logger.debug("Found HTML text: " + html_text)
     channel_number = text_parts[0][-1:]
     date = text_parts[1][5:15]
-    time = re.sub(r'[-:]', '.', text_parts[1][16:])
+    time = re.sub(r"[-:]", ".", text_parts[1][16:])
 
     # Read the image
     image_part = msg.get_payload(1).get_payload()
-    file_name = date + '/' + time + '.jpg'
-    file = io.BytesIO(base64.b64decode(image_part.encode('ascii'))).read()
+    file_name = date + "/" + time + ".jpg"
+    file = io.BytesIO(base64.b64decode(image_part.encode("ascii"))).read()
 
     # Upload
-    file_path = '/ch' + channel_number + '/' + file_name
-    logger.debug('Uploading ' + file_path)
+    file_path = "/ch" + channel_number + "/" + file_name
+    logger.debug("Uploading " + file_path)
     file_data = dbx.files_upload(file, file_path, mute=True)
 
-    logger.info('Uploaded ' + file_path + ' to Dropbox')  
+    logger.info("Uploaded " + file_path + " to Dropbox")
+
 
 # Forward email somewhere else
 def to_email(msg_data):
-    server = smtplib.SMTP(options['email_host'], options['email_port'])
+    username = options["email"]["username"]
+    server = smtplib.SMTP(options["email"]["host"], options["email"]["port"])
     server.starttls()
-    server.login(options['email_username'], options['email_password'])
-    server.sendmail(options['email_from_addr'], options['email_to_addr'], msg_data)
+    server.login(username, options["email"]["password"])
+    # Ues the username as the from and to
+    server.sendmail(username, username, msg_data)
     server.quit()
     logger.info("Email sent")
+
 
 ###############################################################################
 # Main
 ###############################################################################
 
-# Log to stdout 
-logger = logging.getLogger(__name__)
-logger.setLevel(options['log_level']) 
-handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
-logger.addHandler(handler) 
-logger.info('Starting')
 
-# Accept a file name, otherwise read from stdin
-email_data=""
-if(len(sys.argv) > 1 and sys.argv[1]): 
+def main(email_data):
+
+    # Parse email data into an email
+    logger.debug("email_data:\n" + email_data)
+    msg = email.message_from_string(email_data)
+
+    # Do things with the email
+    dropbox_enabled = options["dropbox"]["enabled"]
+    email_enabled = options["email"]["enabled"]
+
+    if not (dropbox_enabled) and not (email_enabled):
+        logger.error("Message received but no destinations enabled!")
+        sys.exit()
+
+    if dropbox_enabled:
+        try:
+            to_dropbox(msg)
+        except:
+            logger.error("Error uploading to dropbox: " + str(sys.exc_info()))
+
+    if email_enabled:
+        try:
+            to_email(email_data)
+        except:
+            logger.error("Error forwarding email: " + str(sys.exc_info()))
+
+
+# Support directly calling from command line with a file path containing the email_data
+if __name__ == "__main__":
     f = open(sys.argv[1], "r")
-    email_data = f.read() 
+    email_data = f.read()
     f.close()
-else:
-    email_data = sys.stdin.read()
-    sys.stdin.close()
-logger.debug('email_data:\n' + email_data)
-msg = email.message_from_string(email_data)    
-
-# Do things with the email
-
-dropbox_enabled = options['dropbox_enabled']
-email_enabled = options['email_enabled']
-
-if(not(dropbox_enabled) and not(email_enabled)): 
-    logger.error("Message received but no desitnations enabled!")
-    sys.exit()
-
-if(dropbox_enabled): 
-    try: 
-        to_dropbox(msg)
-    except:
-        logger.error( "Error uploading to dropbox: " + sys.exc_info()[0] )
-
-if(email_enabled): 
-    try: 
-        to_email(email_data)
-    except: 
-        logger.error( "Error forwarding email: " + sys.exc_info()[0] )
+    main(email_data)

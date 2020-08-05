@@ -7,7 +7,7 @@
   "startup": "application",
   "boot": "auto",
   "options": {
-    "log_level": 10,
+    "log_level": 20,
     "dropbox": {
       "enabled": false,
       "access_token": ""
@@ -16,10 +16,8 @@
       "enabled": false,
       "host": "smtp.gmail.com",
       "port": 587,
-      "username": "",
-      "password": "",
-      "from_addr": "",
-      "to_addr": ""
+      "username": "user@gmail.com",
+      "password": ""
     }
   },
   "schema": {
@@ -33,9 +31,7 @@
       "host": "str?",
       "port": "int?",
       "username": "str?",
-      "password": "str?",
-      "from_addr": "str?",
-      "to_addr": "str?"
+      "password": "str?"
     }
   },
   "ports": {

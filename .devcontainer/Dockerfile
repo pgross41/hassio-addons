@@ -34,7 +34,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # This is a development container.  Don't bother to clean up apt cache, this way we have it handy later
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    docker-compose
+    docker-compose \
+    python3-pip
 
 COPY .devcontainer/start_ha.sh /usr/local/bin/start_ha.sh
 
