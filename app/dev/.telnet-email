@@ -15,16 +15,4 @@ quit
 #######################
 
 printf '\0%s\0%s' 'hass' 'hass' | openssl base64
-AUTH PLAIN AGhhc3MAaGFzcw==
-
-printf '\0%s\0%s' 'hass' 'x' | openssl base64
-AUTH PLAIN AGhhc3MAeA==
-
-printf '\0%s\0%s' 'test' 'test' | openssl base64
-AUTH PLAIN AHRlc3QAdGVzdA==
-
-hasshass
-AUTH PLAIN aGFzc2hhc3M=
-
-hass:hass
-AUTH PLAIN aGFzczpoYXNz
+AGhhc3MAaGFzcw==

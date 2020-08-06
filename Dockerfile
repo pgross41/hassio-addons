@@ -1,7 +1,3 @@
-# TODO: 
-# - Move all these dovecot/postfix configs into actual files and just copy them
-# - See about dovecot -n for 1 file
-
 ARG BUILD_FROM=homeassistant/amd64-base:latest
 FROM $BUILD_FROM
 
@@ -44,7 +40,8 @@ ARG USERNAME=hass
 ARG PASSWORD=hass
 RUN true && \
     #
-    # Write postfix/dovecot logging to Docker output (i.e. /proc/1/fd/1) - Useful for development but too cluttered for production
+    # Write postfix/dovecot logging to Docker output (i.e. /proc/1/fd/1)
+    # Useful for development but comment out for production as it is too cluttered
     echo "postlog   unix-dgram n  -       n       -       1       postlogd" >> /etc/postfix/master.cf && \
     echo "maillog_file_prefixes = /proc" >> /etc/postfix/main.cf && \
     echo "maillog_file = /proc/1/fd/1" >> /etc/postfix/main.cf && \ 
@@ -52,6 +49,12 @@ RUN true && \
     echo "log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
     echo "info_log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
     echo "debug_log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
+    #
+    # Enable plaintext logins and add user to dovecot user database
+    echo "disable_plaintext_auth = no" >> /etc/dovecot/conf.d/10-auth.conf && \
+    echo "auth_mechanisms = plain login" >> /etc/dovecot/conf.d/10-auth.conf && \
+    sed -i 's/scheme=CRYPT/scheme=PLAIN/g' /etc/dovecot/conf.d/auth-passwdfile.conf.ext  && \
+    echo "${USERNAME}:{PLAIN}${PASSWORD}::::::" >> /etc/dovecot/users && \
     #
     # Assure /var/spool/postfix/private/auth gets created
     # https://www.howtoforge.com/postfix-dovecot-warning-sasl-connect-to-private-auth-failed-no-such-file-or-directory
@@ -63,11 +66,6 @@ RUN true && \
     \n   group = postfix \
     \n}" >> /etc/dovecot/conf.d/10-master.conf && \
     #
-    # Tell Postfix to use Dovecot for SASL authentication
-    echo "smtpd_sasl_type = dovecot" >> /etc/postfix/main.cf && \
-    echo "smtpd_sasl_path = private/auth" >> /etc/postfix/main.cf && \
-    echo "smtpd_sasl_auth_enable = yes" >> /etc/postfix/main.cf && \
-    #
     # Tell Dovecot to listen for SASL authentication requests from Postfix
     printf " \
     \nservice auth { \
@@ -78,29 +76,15 @@ RUN true && \
     \n    } \
     \n}" > /etc/dovecot/conf.d/10-master.conf && \
     #
-    # Enable plaintext logins 
-    echo "disable_plaintext_auth = no" >> /etc/dovecot/conf.d/10-auth.conf && \
-    echo "auth_mechanisms = plain login" >> /etc/dovecot/conf.d/10-auth.conf && \
-    #
-    # Drop the domain off the username - Prefixed with 00 so it is included before password db definition
-    echo "auth_username_format = %n" >> /etc/dovecot/conf.d/00-auth.conf && \
-    #
-    # Use local users for auth
-    # sed -i 's/driver = passwd-file/driver = passwd/g' /etc/dovecot/conf.d/auth-passwdfile.conf.ext  && \
-    # sed -i 's/args = scheme=CRYPT username_format=%u \/etc\/dovecot\/users//g' /etc/dovecot/conf.d/auth-passwdfile.conf.ext  && \
-    sed -i 's/scheme=CRYPT/scheme=PLAIN/g' /etc/dovecot/conf.d/auth-passwdfile.conf.ext  && \
-    # sed -i 's/args = username_format=%u \/etc\/dovecot\/users//g' /etc/dovecot/conf.d/auth-passwdfile.conf.ext  && \
-    echo "hass:{PLAIN}hass::::::" >> /etc/dovecot/users && \
+    # Tell Postfix to use Dovecot for SASL authentication
+    echo "smtpd_sasl_type = dovecot" >> /etc/postfix/main.cf && \
+    echo "smtpd_sasl_path = private/auth" >> /etc/postfix/main.cf && \
+    echo "smtpd_sasl_auth_enable = yes" >> /etc/postfix/main.cf && \
     #
     # Fix postfix error in log: warning: master_wakeup_timer_event: service pickup(public/pickup): Connection refused
     # More info: https://talk.plesk.com/threads/postfix-master-connection-refused.303699/
     sed -i 's/pickup    unix/pickup    fifo/g' /etc/postfix/master.cf && \
     sed -i 's/qmgr      unix/qmgr      fifo/g' /etc/postfix/master.cf && \
-    #
-    # Create mail user
-    adduser ${USERNAME} -D && \
-    addgroup ${USERNAME} root && \
-    echo "${USERNAME}:${PASSWORD}" | chpasswd && \
     #
     # Pipe mail into POST request so we can handle it in Python
     # More info: https://thecodingmachine.io/triggering-a-php-script-when-your-postfix-server-receives-a-mail
