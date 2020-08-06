@@ -1,12 +1,31 @@
-# dvr163-hass
-Home Assistant Add-on for interacting with Eseenet/dvr163 NVR
+# Eseenet/dvr163 NVR Home Assistant Add-on
 
-This add-on is a single container that runs 2 services: 
+Accept "motion detection" emails from an Eseenet/dvr163 NVR and execute configurable actions with the data. Configure the NVR with the following for email alerts: 
+
+* Hostname: <IP of Home Assistant>
+* Username: `hass`
+* Password: `hass`
+
+That will send motion detection events to the add-on. Supported actions: 
+
+## Dropbox
+Upload the image to Dropbox. When creating an access token it is suggested to create an "app" in Dropbox with access only limited to the app folder. Images are saved with the following folder/naming convention: 
+```
+ch<channel number>/<date>/<time>.jpg
+```
+The date and time do not use system time, it uses whatever timestamp text is in the body of the email. This makes it easy to find the relevant video later since the time is synced with the NVR and is not impacted by network latency. 
+
+## Email
+Forward the email to another email address (only tested with Gmail). This is to maintain backwards compatability since the NVR is no longer sending emails to a true inbox. It also allows you to completely block the NVR from accessing the internet if desired e.g. at the router level. 
+
+## How it works
+
+The add-on is a single container that runs 2 services: 
 
 * Postfix SMTP server (port 25)
 * Python web server (port 8080)
 
-The Python server is the main entrypoint process and contains all the logic, Postfix is used as a vehicle to receive emails and provide them to Python. The postfix server runs in the background (but will output to the regular Docker logs). When it receives an email it will POST the contents to the `/api/email` endpoint of the Python web server. 
+The Python server is the main entrypoint process and contains all the logic, Postfix is used as a vehicle to receive emails and provide them to Python. The postfix server runs in the background. When it receives an email it will POST the contents to the `/api/email` endpoint of the Python web server. 
 
 ## Development
 

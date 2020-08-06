@@ -1,3 +1,7 @@
+# TODO: 
+# - Move all these dovecot/postfix configs into actual files and just copy them
+# - See about dovecot -n for 1 file
+
 ARG BUILD_FROM=homeassistant/amd64-base:latest
 FROM $BUILD_FROM
 
@@ -35,9 +39,29 @@ RUN apk update && apk add --no-cache \
     py3-pip  
 
 # Configure postfix/dovecot
+# https://wiki2.dovecot.org/HowTo/PostfixAndDovecotSASL
 ARG USERNAME=hass
 ARG PASSWORD=hass
 RUN true && \
+    #
+    # Write postfix/dovecot logging to Docker output (i.e. /proc/1/fd/1) - Useful for development but too cluttered for production
+    echo "postlog   unix-dgram n  -       n       -       1       postlogd" >> /etc/postfix/master.cf && \
+    echo "maillog_file_prefixes = /proc" >> /etc/postfix/main.cf && \
+    echo "maillog_file = /proc/1/fd/1" >> /etc/postfix/main.cf && \ 
+    echo "auth_verbose = yes" >> /etc/dovecot/conf.d/10-logging.conf && \
+    echo "log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
+    echo "info_log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
+    echo "debug_log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
+    #
+    # Assure /var/spool/postfix/private/auth gets created
+    # https://www.howtoforge.com/postfix-dovecot-warning-sasl-connect-to-private-auth-failed-no-such-file-or-directory
+    printf "\n \
+    \nclient { \
+    \n   path = /var/spool/postfix/private/auth \
+    \n   mode = 0660 \
+    \n   user = postfix \
+    \n   group = postfix \
+    \n}" >> /etc/dovecot/conf.d/10-master.conf && \
     #
     # Tell Postfix to use Dovecot for SASL authentication
     echo "smtpd_sasl_type = dovecot" >> /etc/postfix/main.cf && \
@@ -54,19 +78,24 @@ RUN true && \
     \n    } \
     \n}" > /etc/dovecot/conf.d/10-master.conf && \
     #
-    # Enable plaintext logins
+    # Enable plaintext logins 
     echo "disable_plaintext_auth = no" >> /etc/dovecot/conf.d/10-auth.conf && \
     echo "auth_mechanisms = plain login" >> /etc/dovecot/conf.d/10-auth.conf && \
+    #
+    # Drop the domain off the username - Prefixed with 00 so it is included before password db definition
+    echo "auth_username_format = %n" >> /etc/dovecot/conf.d/00-auth.conf && \
+    #
+    # Use local users for auth
+    # sed -i 's/driver = passwd-file/driver = passwd/g' /etc/dovecot/conf.d/auth-passwdfile.conf.ext  && \
+    # sed -i 's/args = scheme=CRYPT username_format=%u \/etc\/dovecot\/users//g' /etc/dovecot/conf.d/auth-passwdfile.conf.ext  && \
+    sed -i 's/scheme=CRYPT/scheme=PLAIN/g' /etc/dovecot/conf.d/auth-passwdfile.conf.ext  && \
+    # sed -i 's/args = username_format=%u \/etc\/dovecot\/users//g' /etc/dovecot/conf.d/auth-passwdfile.conf.ext  && \
+    echo "hass:{PLAIN}hass::::::" >> /etc/dovecot/users && \
     #
     # Fix postfix error in log: warning: master_wakeup_timer_event: service pickup(public/pickup): Connection refused
     # More info: https://talk.plesk.com/threads/postfix-master-connection-refused.303699/
     sed -i 's/pickup    unix/pickup    fifo/g' /etc/postfix/master.cf && \
     sed -i 's/qmgr      unix/qmgr      fifo/g' /etc/postfix/master.cf && \
-    #
-    # Write logginng to Docker output (i.e. /proc/1/fd/1) - Useful for development but too cluttered for production
-    # echo "postlog   unix-dgram n  -       n       -       1       postlogd" >> /etc/postfix/master.cf && \
-    # echo "maillog_file_prefixes = /proc" >> /etc/postfix/main.cf && \
-    # echo "maillog_file = /proc/1/fd/1" >> /etc/postfix/main.cf && \ 
     #
     # Create mail user
     adduser ${USERNAME} -D && \

@@ -3,4 +3,20 @@
 curl smtp://localhost \
     --mail-from hass \
     --mail-rcpt hass \
-    --upload-file /app/dev/dvr163-email.txt
+    --upload-file /app/dev/dvr163-email.txt \
+    --user 'hass:hass' \
+    -v \
+    --login-options AUTH=PLAIN \
+    --ssl
+
+
+
+
+curl smtp://192.168.1.14 \
+    --mail-from hass \
+    --mail-rcpt hass \
+    --upload-file /app/dev/dvr163-email.txt \
+    --user 'hass:hass' \
+    --ssl  
+
+need to test with auth :'(

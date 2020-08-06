@@ -48,7 +48,7 @@ def to_email(msg_data):
     # Ues the username as the from and to
     server.sendmail(username, username, msg_data)
     server.quit()
-    logger.info("Email sent")
+    logger.info("Email forwarded to " + username)
 
 
 ###############################################################################
