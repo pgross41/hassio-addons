@@ -1,21 +1,25 @@
 # Home Assistant Add-on: Eseenet/dvr163 NVR
 
-Accept "motion detection" emails from an Eseenet/dvr163 NVR and execute configurable actions with the data. Configure the NVR with the following for email alerts: 
+Accept "motion detection" emails from an Eseenet/dvr163 NVR and execute configurable actions with the data. 
 
-* Hostname: <IP of Home Assistant>
-* Username: `hass`
-* Password: `hass`
+## NVR Configuration
 
-That will send motion detection events to the add-on. Supported actions: 
+The NVR must send the emails to Home Assistan. From the main system menu go to `Network Setup` > `E-Mail` and use the following configuration. The `hass` user is required, replace only the `SMTP Server` with the address of your home assistant: 
 
-## Dropbox
+![image](https://user-images.githubusercontent.com/11710621/91005315-2c5a5d80-e59c-11ea-883c-3767ae463925.png)
+
+That will send motion detection events to the add-on. 
+
+## Supported actions: 
+
+### Dropbox
 Upload the image to Dropbox. When creating an access token it is suggested to create an "app" in Dropbox with access only limited to the app folder. Images are saved with the following folder/naming convention: 
 ```
 ch<channel number>/<date>/<time>.jpg
 ```
 The date and time do not use system time, it uses whatever timestamp text is in the body of the email. This makes it easy to find the relevant video later since the time is synced with the NVR and is not impacted by network latency. 
 
-## Email
+### Email
 Forward the email to another email address (only tested with Gmail). This is to maintain backwards compatability since the NVR is no longer sending emails to a true inbox. It also allows you to completely block the NVR from accessing the internet if desired e.g. at the router level. 
 
 ## How it works
