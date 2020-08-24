@@ -95,9 +95,11 @@ RUN true && \
     echo "pickup    fifo  n       -       -       60      1       pickup" >> /etc/postfix/master.cf && \
     echo "    -o content_filter=myhook:dummy" >> /etc/postfix/master.cf && \
     #
-    # Add mail alias script to handle mail
+    # Create mail user, needed for SASL even though user is added to /etc/dovecot/users above
+    adduser ${USERNAME} -D && \
+    addgroup ${USERNAME} root && \
+    echo "${USERNAME}:${PASSWORD}" | chpasswd && \
     newaliases 
-
 
 # Configure Python
 COPY requirements.txt /app/
