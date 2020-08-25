@@ -35,7 +35,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     docker-compose \
-    python3-pip
+    python3-pip \
+    pylint
 
 COPY .devcontainer/start_ha.sh /usr/local/bin/start_ha.sh
 

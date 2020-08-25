@@ -3,5 +3,6 @@
     "python.linting.enabled": true,
     "python.linting.pycodestyleEnabled": false,
     "python.linting.mypyEnabled": false,
-    "python.linting.pylamaEnabled": false
+    "python.linting.pylamaEnabled": false,
+    "python.formatting.provider": "yapf"
 }

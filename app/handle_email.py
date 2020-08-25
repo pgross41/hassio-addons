@@ -1,38 +1,108 @@
 import base64
-from shared import options, logger
+import datetime
 import dropbox
 import email
 import io
+import json
+import os
 import re
 import smtplib
 import sys
+from datetime import datetime
+from requests import post
+from shared import options, logger
 
-# Parse email and upload to dropbox
+###############################################################################
+# Utility functions
+###############################################################################
+
+
+# Parse useful info from the text in the email body
+def parse_text(msg):
+    # Parse out the html text
+    # TODO: Simplify with this? https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+    html_part = msg.get_payload(0).get_payload()
+    # Remove style tags
+    clean_html = re.sub(r"(?is)<(script|style).*?>.*?(</\1>)", "",
+                        html_part.strip())
+    # Get text content
+    html_text = re.sub(r"(?s)<.*?>", " ", clean_html).strip()
+    text_parts = html_text.split("; ")
+    logger.debug("Found HTML text: " + html_text)
+    message = text_parts[0][6:]
+    channel_number = text_parts[0][-1:]
+    date = text_parts[1][5:15]
+    time = text_parts[1][16:]
+    return {
+        "html_text": html_text,
+        "message": message,
+        "channel_number": channel_number,
+        "date": date,
+        "time": time,
+    }
+
+
+###############################################################################
+# Email actions
+###############################################################################
+
+
+# Write the latest snapshot to disk and notify Home Assistant
+def to_home_assistant(msg):
+
+    parsed_text = parse_text(msg)
+    channel_number = parsed_text["channel_number"]
+    message = parsed_text["message"]
+
+    # Write image to /snapshots directory
+    image_part = msg.get_payload(1).get_payload()
+    file = io.BytesIO(base64.b64decode(image_part.encode("ascii"))).read()
+    if not os.path.isdir('/snapshots'):
+        os.mkdir('/snapshots')
+    out_path = "/snapshots/cam_" + channel_number + ".jpg"
+    logger.debug("Saving " + out_path)
+    out_file = open(out_path, "wb")
+    out_file.write(file)
+    out_file.close()
+    logger.info("Saved " + out_path)
+
+    # Notify Home Assistant
+    logger.debug('Sending POST request')
+    supervisor_token = os.environ['SUPERVISOR_TOKEN']
+    base_url = os.getenv('HASS_API_BASE_URL', "http://supervisor/core/api/")
+    data = {
+        "channel_number": channel_number,
+        "file_name": out_path,
+        "message": message,
+        "timestamp": datetime.now().strftime("%a %b %d, %I:%M:%S %p"),
+    }
+    headers = {
+        "Authorization": "Bearer " + supervisor_token,
+        "Content-Type": "application/json",
+    }
+    url = base_url + options["home_assistant"]["post_to"].lstrip("/")
+    response = post(url, data=json.dumps(data), headers=headers)
+    if (response.status_code >= 400):
+        raise Exception("Bad response from home assistant: " + str(response))
+    logger.info("Sent POST request to home assistant: " + url)
+
+
+# Upload attached image to Dropbox
 def to_dropbox(msg):
 
     # Initialize Dropbox client
     dbx = dropbox.Dropbox(options["dropbox"]["access_token"])
 
-    # Parse out the html text
-    # TODO: Simplify with this? https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-    html_part = msg.get_payload(0).get_payload()
-    # Remove style tags
-    clean_html = re.sub(r"(?is)<(script|style).*?>.*?(</\1>)", "", html_part.strip())
-    # Get text content
-    html_text = re.sub(r"(?s)<.*?>", " ", clean_html).strip()
-    text_parts = html_text.split("; ")
-    logger.debug("Found HTML text: " + html_text)
-    channel_number = text_parts[0][-1:]
-    date = text_parts[1][5:15]
-    time = re.sub(r"[-:]", ".", text_parts[1][16:])
-
     # Read the image
     image_part = msg.get_payload(1).get_payload()
-    file_name = date + "/" + time + ".jpg"
     file = io.BytesIO(base64.b64decode(image_part.encode("ascii"))).read()
 
     # Upload
-    file_path = "/ch" + channel_number + "/" + file_name
+    parsed_text = parse_text(msg)
+    channel_number = parsed_text["channel_number"]
+    date = parsed_text["date"]
+    time = re.sub(r"[-:]", ".", parsed_text["time"])
+    file_path = "/ch" + channel_number + "/" + date + "/" + time + ".jpg"
     logger.debug("Uploading " + file_path)
     file_data = dbx.files_upload(file, file_path, mute=True)
 
@@ -63,12 +133,21 @@ def main(email_data):
     msg = email.message_from_string(email_data)
 
     # Do things with the email
+    home_assistant_enabled = options["home_assistant"]["enabled"]
     dropbox_enabled = options["dropbox"]["enabled"]
     email_enabled = options["email"]["enabled"]
 
-    if not (dropbox_enabled) and not (email_enabled):
+    if not (home_assistant_enabled) and not (dropbox_enabled) and not (
+            email_enabled):
         logger.error("Message received but no destinations enabled!")
         sys.exit()
+
+    if home_assistant_enabled:
+        try:
+            to_home_assistant(msg)
+        except:
+            logger.error("Error sending to Home Assistant: " +
+                         str(sys.exc_info()))
 
     if dropbox_enabled:
         try:

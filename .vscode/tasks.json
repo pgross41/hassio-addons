@@ -108,7 +108,9 @@
       ],
       "dockerRun": {
         "env": {
-          "OPTIONS_PATH": "/app/dev/env/options.json"
+          "OPTIONS_PATH": "/app/dev/env/options.json",
+          "SUPERVISOR_TOKEN": "if.changed.do.not.commit",
+          "HASS_API_BASE_URL": "http://192.168.1.2:8123/api/",
         }
       },
       "python": {

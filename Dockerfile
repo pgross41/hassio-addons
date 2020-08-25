@@ -42,13 +42,13 @@ RUN true && \
     #
     # Write postfix/dovecot logging to Docker output (i.e. /proc/1/fd/1)
     # Useful for development but comment out for production as it is too cluttered
-    echo "postlog   unix-dgram n  -       n       -       1       postlogd" >> /etc/postfix/master.cf && \
-    echo "maillog_file_prefixes = /proc" >> /etc/postfix/main.cf && \
-    echo "maillog_file = /proc/1/fd/1" >> /etc/postfix/main.cf && \ 
-    echo "auth_verbose = yes" >> /etc/dovecot/conf.d/10-logging.conf && \
-    echo "log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
-    echo "info_log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
-    echo "debug_log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
+    # echo "postlog   unix-dgram n  -       n       -       1       postlogd" >> /etc/postfix/master.cf && \
+    # echo "maillog_file_prefixes = /proc" >> /etc/postfix/main.cf && \
+    # echo "maillog_file = /proc/1/fd/1" >> /etc/postfix/main.cf && \ 
+    # echo "auth_verbose = yes" >> /etc/dovecot/conf.d/10-logging.conf && \
+    # echo "log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
+    # echo "info_log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
+    # echo "debug_log_path = /proc/1/fd/1" >> /etc/dovecot/conf.d/10-auth.conf && \
     #
     # Enable plaintext logins and add user to dovecot user database
     echo "disable_plaintext_auth = no" >> /etc/dovecot/conf.d/10-auth.conf && \
@@ -57,7 +57,7 @@ RUN true && \
     echo "${USERNAME}:{PLAIN}${PASSWORD}::::::" >> /etc/dovecot/users && \
     #
     # Assure /var/spool/postfix/private/auth gets created
-    # https://www.howtoforge.com/postfix-dovecot-warning-sasl-connect-to-private-auth-failed-no-such-file-or-directory
+    # More info: https://www.howtoforge.com/postfix-dovecot-warning-sasl-connect-to-private-auth-failed-no-such-file-or-directory
     printf "\n \
     \nclient { \
     \n   path = /var/spool/postfix/private/auth \

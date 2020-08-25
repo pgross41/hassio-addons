@@ -1,13 +1,18 @@
 {
   "name": "Eseenet/dvr163 NVR",
-  "version": "0.1",
+  "version": "0.2",
   "description": "Home Assistant Add-on for interacting with Eseenet/dvr163 NVR",
   "slug": "dvr163",
   "url": "https://github.com/pgross41/dvr163-hass",
   "startup": "application",
   "boot": "auto",
+  "homeassistant_api": "true",
   "options": {
     "log_level": 20,
+    "home_assistant": {
+      "enabled": false,
+      "post_to": "services/script/dvr163_event"
+    },
     "dropbox": {
       "enabled": false,
       "access_token": ""
@@ -22,6 +27,10 @@
   },
   "schema": {
     "log_level": "int",
+    "home_assistant": {
+      "enabled": "bool",
+      "post_to": "str?"
+    },
     "dropbox": {
       "enabled": "bool",
       "access_token": "str?"
