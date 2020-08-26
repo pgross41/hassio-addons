@@ -11,7 +11,7 @@
     "log_level": 20,
     "home_assistant": {
       "enabled": false,
-      "post_to": "services/script/dvr163_event"
+      "post_to": "services/script/handle_dvr163_email"
     },
     "dropbox": {
       "enabled": false,

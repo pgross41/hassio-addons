@@ -47,24 +47,13 @@ def parse_text(msg):
 ###############################################################################
 
 
-# Write the latest snapshot to disk and notify Home Assistant
+# Send the info to Home Assistant
 def to_home_assistant(msg):
 
+    image_part = msg.get_payload(1).get_payload()
     parsed_text = parse_text(msg)
     channel_number = parsed_text["channel_number"]
     message = parsed_text["message"]
-
-    # Write image to /snapshots directory
-    image_part = msg.get_payload(1).get_payload()
-    file = io.BytesIO(base64.b64decode(image_part.encode("ascii"))).read()
-    if not os.path.isdir('/snapshots'):
-        os.mkdir('/snapshots')
-    out_path = "/snapshots/cam_" + channel_number + ".jpg"
-    logger.debug("Saving " + out_path)
-    out_file = open(out_path, "wb")
-    out_file.write(file)
-    out_file.close()
-    logger.info("Saved " + out_path)
 
     # Notify Home Assistant
     logger.debug('Sending POST request')
@@ -72,7 +61,7 @@ def to_home_assistant(msg):
     base_url = os.getenv('HASS_API_BASE_URL', "http://supervisor/core/api/")
     data = {
         "channel_number": channel_number,
-        "file_name": out_path,
+        "image_data": image_part,
         "message": message,
         "timestamp": datetime.now().strftime("%a %b %d, %I:%M:%S %p"),
     }
@@ -83,8 +72,8 @@ def to_home_assistant(msg):
     url = base_url + options["home_assistant"]["post_to"].lstrip("/")
     response = post(url, data=json.dumps(data), headers=headers)
     if (response.status_code >= 400):
-        raise Exception("Bad response from home assistant: " + str(response))
-    logger.info("Sent POST request to home assistant: " + url)
+        raise Exception("Bad response from Home Assistant: " + str(response))
+    logger.info("Sent POST request to Home Assistant: " + url)
 
 
 # Upload attached image to Dropbox
