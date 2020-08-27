@@ -1,5 +1,6 @@
 {
   "name": "Eseenet/dvr163 NVR",
+  "image": "pgross41/dvr163-hass-{arch}",
   "version": "0.2",
   "description": "Home Assistant Add-on for interacting with Eseenet/dvr163 NVR",
   "slug": "dvr163",
