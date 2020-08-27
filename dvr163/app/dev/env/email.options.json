@@ -1,0 +1,7 @@
+log_level=10
+email_host=smtp.gmail.com
+email_port=587
+email_username=alerts.for.patrick@gmail.com
+email_password=hihijojo9090
+email_from_addr=alerts.for.patrick@gmail.com
+email_to_addr=alerts.for.patrick@gmail.com

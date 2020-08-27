@@ -102,7 +102,7 @@ RUN true && \
     newaliases 
 
 # Configure Python
-COPY requirements.txt /app/
+COPY app/requirements.txt /app/
 WORKDIR /app
 RUN pip install -r requirements.txt && \
     ln -s /usr/bin/python3 /usr/bin/python

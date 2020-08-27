@@ -1,0 +1,18 @@
+{
+    "log_level": 10,
+    "home_assistant": {
+        "enabled": true,
+        "post_to": "services/script/motion_detected_notifications"
+    },
+    "dropbox": {
+        "enabled": true,
+        "access_token": "PqPCFOp5VOgAAAAAAAFGl5z4jSZuiF5GwwbzUBdY8U2KOOmTFCptluJEym542dAN"
+    },
+    "email": {
+        "enabled": true,
+        "host": "smtp.gmail.com",
+        "port": 587,
+        "username": "alerts.for.patrick@gmail.com",
+        "password": "hihijojo9090"
+    }
+}
