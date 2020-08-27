@@ -1,8 +1,4 @@
-# Hass.io Add-ons for Home Assistant
-
-My Hass.IO add-ons.
-
-## Installation
+# Hass.io Add-ons
 
 Follow [the official instructions](https://home-assistant.io/hassio/installing_third_party_addons/) on the Home Assistant website and use the following URL:
 ```txt
