@@ -7,3 +7,16 @@ curl smtp://localhost \
     --user 'hass:hass' \
     -v \
     --login-options AUTH=PLAIN 
+
+#################################################
+
+# Test command for sending an email via curl IRL
+
+curl smtp://192.168.1.2 \
+    --mail-from hass \
+    --mail-rcpt hass \
+    --upload-file app/dev/dvr163-email.txt \
+    --user 'hass:hass' \
+    -v \
+    --login-options AUTH=PLAIN 
+
