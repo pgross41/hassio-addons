@@ -26,7 +26,7 @@ s.setblocking(1)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.connect((TCP_IP, TCP_PORT))
 
-# Initial request... response is XML followed by many "# symbols
+# Initial request... response is XML followed by many "#" symbols
 # s.send(b'GET /bubble/live?ch=0&stream=0 HTTP/1.1\r\n\r\n') 
 # s.recv(1024) 
 
