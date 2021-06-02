@@ -4,12 +4,12 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "hass-run",
+      "label": "Start Home Assistant",
       "type": "shell",
-      "command": "./.devcontainer/start_ha.sh",
+      "command": "./.devcontainer/supervisor.sh",
       "group": {
         "kind": "test",
-        "isDefault": true
+        "isDefault": true,
       },
       "presentation": {
         "reveal": "always",
@@ -18,20 +18,9 @@
       "problemMatcher": []
     },
     {
-      "label": "hass-cleanup",
+      "label": "Run Home Assistant CLI",
       "type": "shell",
-      "command": "./.devcontainer/start_ha.sh --cleanup",
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "new"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "hass-cli",
-      "type": "shell",
-      "command": "docker run --rm -ti -v /etc/machine-id:/etc/machine-id --network=hassio --add-host hassio:172.30.32.2 homeassistant/amd64-hassio-cli:dev",
+      "command": "docker exec -ti hassio_cli /usr/bin/cli.sh",
       "group": "test",
       "presentation": {
         "reveal": "always",
@@ -51,11 +40,11 @@
       "problemMatcher": []
     },
     {
-      "label": "docker-run",
+      "label": "Docker: Run",
       "type": "shell",
-      "command": "docker run --rm --env-file=${workspaceFolder}/env/.env -p=25:25 -p=8080:8080 --name=dvr163-hass dvr163-hass:latest",
+      "command": "docker run --rm -p=25:25 -e OPTIONS_PATH=/app/dev/env/options.json -p=8080:8080 --name=dvr163-hass dvr163-hass:latest",
       "dependsOn": [
-        "docker-build"
+        "Docker: Build"
       ],
       "group": "test",
       "presentation": {
@@ -65,33 +54,38 @@
       "problemMatcher": []
     },
     {
+      "label": "Docker: Build",
       "type": "docker-build",
-      "label": "docker-build",
       "platform": "python",
       "dockerBuild": {
         "tag": "dvr163-hass:latest",
-        "dockerfile": "${workspaceFolder}/Dockerfile",
+        "dockerfile": "${workspaceFolder}/dvr163/Dockerfile",
         "context": "${workspaceFolder}",
         "pull": true
       }
     },
     {
+      "label": "Docker: Run Flask",
       "type": "docker-run",
-      "label": "docker-run: flask",
       "dependsOn": [
-        "docker-build"
+        "Docker: Build"
       ],
       "dockerRun": {
+        "volumes": [
+          {
+            "localPath": "${workspaceFolder}\\dvr163\\app",
+            "containerPath": "/app"
+          }
+        ],
         "env": {
-          "FLASK_APP": "main.py",
+          "FLASK_APP": "/app/main.py",
+          "FLASK_ENV": "development",
           "OPTIONS_PATH": "/app/dev/env/options.json"
         }
       },
       "python": {
         "args": [
           "run",
-          "--no-debugger",
-          "--no-reload",
           "--host",
           "0.0.0.0",
           "--port",
@@ -101,10 +95,10 @@
       }
     },
     {
+      "label": "Docker: Run handle_email.py",
       "type": "docker-run",
-      "label": "docker-run: handle_email.py",
       "dependsOn": [
-        "docker-build"
+        "Docker: Build"
       ],
       "dockerRun": {
         "env": {

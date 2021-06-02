@@ -102,13 +102,13 @@ RUN true && \
     newaliases 
 
 # Configure Python
-COPY app/requirements.txt /app/
 WORKDIR /app
+COPY dvr163/app/requirements.txt .
 RUN pip install -r requirements.txt && \
     ln -s /usr/bin/python3 /usr/bin/python
 
 # Copy source code
-COPY app /app
+COPY dvr163/app /app
 RUN chmod -R 777 /app 
 
 # Run the app

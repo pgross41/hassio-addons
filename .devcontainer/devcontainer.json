@@ -1,30 +1,18 @@
-// For format details, see https://aka.ms/vscode-remote/devcontainer.json 
-// TODO: When https://github.com/microsoft/vscode-remote-release/issues/2129 is fixed, move to ${localWorkspaceFolderBasename}\
 {
-	"name": "Home Assistant Add-On",
+	"name": "Home Assistant Add-Ons",
 	"context": "..",
 	"dockerFile": "Dockerfile",
-	"appPort": [
-		25,
-		8123,
-		8080
-	],
-	"runArgs": [
-		"-e",
-		"GIT_EDITOR=code --wait",
-		"--privileged"
-	],
-	"settings": {
-		"terminal.integrated.shell.linux": "/bin/bash"
+	"appPort": ["7123:8123", "7357:4357", 25, 8080],
+    "postStartCommand": "service docker start",
+	"runArgs": ["-e", "GIT_EDITOR=code --wait", "--privileged"],
+	"containerEnv": {
+		"WORKSPACE_DIRECTORY": "${containerWorkspaceFolder}"
 	},
-	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/test_hassio/addons/local/dvr163-hass,type=bind,consistency=delegated",
-	"workspaceFolder": "/workspaces/test_hassio/addons/local/dvr163-hass",
-	"mounts": [
-		// Cache docker images between devcontainer rebuilds (and share between devcontainers)
-		"source=vsc-hassio-docker,target=/var/lib/docker,type=volume"
-	],
 	"extensions": [
-		"ms-azuretools.vscode-docker@1.3.1",
-		"ms-python.python@2020.8.103604"
-	]
+		"timonwong.shellcheck",
+		"esbenp.prettier-vscode"
+	],
+	"settings": { 
+		"terminal.integrated.shell.linux": "/bin/bash"
+	}
 }
