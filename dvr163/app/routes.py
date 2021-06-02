@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import Flask, render_template, request
 import handle_email
+import stream
 import json
 from shared import logger
 from main import app
@@ -8,8 +9,9 @@ from main import app
 
 @app.route("/")
 def home():
-    logger.info("get home got")  # TODO: Testing, remove
-    return "Maybe a GUI someday"
+    logger.info("Streaming")
+    stream.main()
+    return "Maybe a GUI somedayyy"
 
 
 @app.route("/api/email", methods=["POST"])

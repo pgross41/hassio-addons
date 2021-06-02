@@ -5,7 +5,10 @@
       "type": "python",
       "request": "launch",
       "program": "${file}",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "env": {
+        "OPTIONS_PATH": "${workspaceFolder}/dvr163/app/dev/env/options.json"
+      }
     },
     {
       "name": "Docker: Python - Flask",

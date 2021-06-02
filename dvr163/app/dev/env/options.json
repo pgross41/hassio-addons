@@ -1,5 +1,9 @@
 {
     "log_level": 10,
+    "nvr": {
+        "ip": "192.168.1.88",
+        "port": 8808
+    },
     "home_assistant": {
         "enabled": true,
         "post_to": "services/script/motion_detected_notifications"
