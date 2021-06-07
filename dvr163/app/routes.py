@@ -9,8 +9,9 @@ from main import app
 
 @app.route("/")
 def home():
-    logger.info("Streaming")
+    logger.info("Begin stream")
     stream.main()
+    logger.info("End stream")
     return "Maybe a GUI somedayyy"
 
 
