@@ -1,4 +1,7 @@
-# Set OPTIONS_PATH and view output via: python3 stream.py | ffplay -i pipe:
+# Run manually:
+# > set OPTIONS_PATH=%cd%\dvr163\app\dev\env\options.json
+# > python3 stream.py | ffplay -i pipe:
+
 from shared import options, logger
 import socket
 import time
@@ -31,7 +34,6 @@ def main(channel_number=0, stream=0):
     s.setblocking(0)
 
     logger.info("Connected")
-    stdout = sys.stdout.buffer
 
     g711_prelude = b'\xaa\x00\x00\x00'
     h264_prelude = b'\x00\x00\x00\x01'
@@ -43,26 +45,27 @@ def main(channel_number=0, stream=0):
                 data = s.recv(16)
                 before_data = None
 
+                # Beginning of audio bytes (untested)
                 if g711_prelude in data:
                     idx = data.index(g711_prelude)
                     before_data = data[:idx]
                     data = data[idx:]
-                    if in_h264:
-                        stdout.write(before_data)
-                    stdout.flush()
+                    if in_h264:  # Should this be negated?
+                        yield (before_data)
                     in_h264 = False
+
+                # Beginning of video bytes
                 if h264_prelude in data:
                     idx = data.index(h264_prelude)
                     before_data = data[:idx]
                     data = data[idx:]
                     if in_h264:
-                        stdout.write(before_data)
-
-                    stdout.flush()
+                        yield (before_data)
                     in_h264 = True
 
                 if in_h264:
-                    stdout.write(data)
+                    yield (data)
+
             except BlockingIOError:
                 time.sleep(.1)
                 pass
@@ -78,7 +81,9 @@ def main(channel_number=0, stream=0):
         s.shutdown(1)
         s.close()
 
-
 # Support directly calling from command line with a file path containing the email_data
 if __name__ == "__main__":
-    main(0, 0)
+    stdout = sys.stdout.buffer
+    generator = main(0, 0)
+    while True:
+        stdout.write(next(generator))

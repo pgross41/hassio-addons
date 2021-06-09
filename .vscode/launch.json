@@ -16,6 +16,7 @@
       "request": "launch",
       "preLaunchTask": "Docker: Run Flask",
       "python": {
+        "justMyCode": false,
         "pathMappings": [
           {
             "localRoot": "${workspaceFolder}/dvr163/app",
