@@ -35,37 +35,10 @@ def main(channel_number=0, stream=0):
 
     logger.info("Connected")
 
-    g711_prelude = b'\xaa\x00\x00\x00'
-    h264_prelude = b'\x00\x00\x00\x01'
-    in_h264 = False
-
     try:
         while True:
             try:
-                data = s.recv(16)
-                before_data = None
-
-                # Beginning of audio bytes (untested)
-                if g711_prelude in data:
-                    idx = data.index(g711_prelude)
-                    before_data = data[:idx]
-                    data = data[idx:]
-                    if in_h264:  # Should this be negated?
-                        yield (before_data)
-                    in_h264 = False
-
-                # Beginning of video bytes
-                if h264_prelude in data:
-                    idx = data.index(h264_prelude)
-                    before_data = data[:idx]
-                    data = data[idx:]
-                    if in_h264:
-                        yield (before_data)
-                    in_h264 = True
-
-                if in_h264:
-                    yield (data)
-
+                yield s.recv(16)
             except BlockingIOError:
                 time.sleep(.1)
                 pass
@@ -80,6 +53,7 @@ def main(channel_number=0, stream=0):
         stdout.close()
         s.shutdown(1)
         s.close()
+
 
 # Support directly calling from command line with a file path containing the email_data
 if __name__ == "__main__":

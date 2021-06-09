@@ -7,8 +7,7 @@ from shared import logger
 from main import app
 
 
-
-@app.route("/api/stream")
+@app.route("/test")
 def home():
     logger.info("Begin stream")
     return Response(stream.main(), mimetype='audio/mpeg4-generic')
